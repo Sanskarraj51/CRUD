@@ -1,9 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ConfirmBox from "../component/ConfirmBox";
 
 function Home() {
   const [users, setUsers] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [deleteData, setDeleteData] = useState({});
 
   function loadUsers() {
     axios.get("http://localhost:3001/users").then((res) => {
@@ -15,8 +18,23 @@ function Home() {
     loadUsers();
   }, []);
 
-  function deleteUser(id) {
-    axios.delete(`http://localhost:3001/users/${id}`).then(loadUsers());
+  function deleteUser() {
+    axios
+      .delete(`http://localhost:3001/users/${deleteData?.id}`)
+      .then((res) => {
+        loadUsers();
+        setOpen(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  console.log(deleteData);
+
+  function openDelete(data) {
+    setOpen(true);
+    setDeleteData(data);
   }
 
   return (
@@ -94,7 +112,7 @@ function Home() {
                             Edit
                           </Link>
                           <Link
-                            onClick={()=>deleteUser(data.id)}
+                            onClick={() => openDelete(data)}
                             to={"#"}
                             className="bg-red-600 text-white px-6 py-2 rounded-lg"
                           >
@@ -110,6 +128,13 @@ function Home() {
           </div>
         </div>
       </div>
+
+      <ConfirmBox
+        open={open}
+        closeDialog={() => setOpen(false)}
+        title={deleteData?.name}
+        deleteFunction={deleteUser}
+      />
     </>
   );
 }
